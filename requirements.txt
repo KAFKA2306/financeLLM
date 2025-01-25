@@ -1,50 +1,47 @@
-# Core dependencies
-requests==2.31.0
-python-dotenv==1.0.1
-tiktoken==0.5.1
+# Core Python Libraries
+python==3.8.10  # Specify Python version for compatibility
 
-# LangChain dependencies
-langchain-core==0.1.32
-langchain==0.1.12
+# Data Processing and Scientific Computing
+numpy==1.24.3  # Numerical computing library
+pandas==2.0.1  # Data manipulation and analysis
+tqdm==4.65.0  # Progress bar for long-running operations
 
-# Vector store
-numpy==1.26.4
-faiss-cpu==1.8.0
+# Machine Learning and NLP Core Libraries
+torch==2.0.1+cpu  # Deep learning framework
+transformers==4.30.2  # Hugging Face transformer models
+sentence-transformers==2.2.2  # Sentence and text embeddings
+langchain==0.0.220  # LLM integration framework
 
-# PDF Processing
-PyPDF2==3.0.1
+# Vector Storage and Similarity Search
+faiss-cpu==1.7.4  # Efficient similarity search and clustering of dense vectors
 
-# Machine Learning dependencies
---find-links https://download.pytorch.org/whl/torch_stable.html
-torch==2.2.1+cpu
-transformers==4.38.2
-sentence-transformers==2.5.1
+# Embedding and Text Processing
+huggingface-hub==0.15.1  # Hugging Face model repository access
+tokenizers==0.13.3  # Fast tokenization library
 
+# PDF and Document Processing
+PyPDF2==3.0.1  # PDF reading and manipulation
 
-pip install --upgrade pip
+# API and Web Requests
+requests==2.31.0  # HTTP library for API interactions
+urllib3==2.0.3  # HTTP client for requests
 
-# First, install PyTorch and related packages through conda
-conda install pytorch cpuonly -c pytorch -y
+# Configuration and Environment Management
+python-dotenv==1.0.0  # Environment variable management
+tiktoken==0.4.0  # Token counting for language models
 
-# Install FAISS through conda
-conda install faiss-cpu -c conda-forge -y
+# Logging and Debugging
+logging==0.5.1.2  # Built-in Python logging
 
-# Install basic scientific packages
-conda install numpy=1.24.3 -y
+# Optional: Development and Testing Tools
+pytest==7.3.1  # Testing framework
+black==23.3.0  # Code formatter
+flake8==6.0.0  # Linting tool
 
-# Now install the remaining packages through pip
-pip install langchain-core==0.1.32
-pip install langchain==0.1.12
-pip install sentence-transformers==2.5.1
-pip install PyPDF2==3.0.1
-pip install python-dotenv==1.0.1
-pip install tiktoken
+# Specific Model Requirements
+# Multilingual embedding model
+intfloat/multilingual-e5-large  # Specific model for embeddings
 
-
-M:\ML\signatejpx\py\config.py
-
-
-1. 必要なライブラリのインストール：
-```bash
-pip install tqdm pypdf2 pandas langchain faiss-cpu
-```
+# Uncomment and adjust as needed for specific environments
+# For CUDA support (replace with your CUDA version)
+# torch==2.0.1+cu117 -f https://download.pytorch.org/whl/torch_stable.html
