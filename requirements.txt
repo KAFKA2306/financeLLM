@@ -1,0 +1,50 @@
+# Core dependencies
+requests==2.31.0
+python-dotenv==1.0.1
+tiktoken==0.5.1
+
+# LangChain dependencies
+langchain-core==0.1.32
+langchain==0.1.12
+
+# Vector store
+numpy==1.26.4
+faiss-cpu==1.8.0
+
+# PDF Processing
+PyPDF2==3.0.1
+
+# Machine Learning dependencies
+--find-links https://download.pytorch.org/whl/torch_stable.html
+torch==2.2.1+cpu
+transformers==4.38.2
+sentence-transformers==2.5.1
+
+
+pip install --upgrade pip
+
+# First, install PyTorch and related packages through conda
+conda install pytorch cpuonly -c pytorch -y
+
+# Install FAISS through conda
+conda install faiss-cpu -c conda-forge -y
+
+# Install basic scientific packages
+conda install numpy=1.24.3 -y
+
+# Now install the remaining packages through pip
+pip install langchain-core==0.1.32
+pip install langchain==0.1.12
+pip install sentence-transformers==2.5.1
+pip install PyPDF2==3.0.1
+pip install python-dotenv==1.0.1
+pip install tiktoken
+
+
+M:\ML\signatejpx\py\config.py
+
+
+1. 必要なライブラリのインストール：
+```bash
+pip install tqdm pypdf2 pandas langchain faiss-cpu
+```
