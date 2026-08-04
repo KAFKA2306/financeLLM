@@ -1,166 +1,95 @@
-# financeLLM — 企業開示文書のRAG分析
+# financeLLM — 企業文書RAGのlegacy実験
 
-**リポジトリ:** https://github.com/KAFKA2306/financeLLM
+> **状態: legacy / 再現不能**  
+> 財務・企業文書を埋め込み、FAISSで検索する試作コードは残っていますが、現在のdefault branchは依存定義とpath設定が整合しておらず、READMEの手順だけでは再現できません。検索品質、引用精度、数値精度を検証済みのRAG製品ではありません。
 
-統合報告書、決算資料、財務文書などをベクトル化し、検索結果を根拠としてLLMへ回答させるRAG（Retrieval-Augmented Generation）研究プロジェクトです。
+## 目的
 
-企業開示から回答を生成するだけでなく、どの文書・ページ・チャンクを参照したかを確認し、検索できなかった内容を推測で補わないことを重視します。
+文書をchunkへ分割し、多言語embeddingとvector searchを使って関連箇所を検索する研究を保存しています。将来的には、回答と参照文書・page・chunkを対応付けることを想定していました。
 
-## 主な処理
+## 現在確認できるコード
 
-```text
-PDF・文書を読み込む
-  → テキストを抽出
-  → チャンクへ分割
-  → 埋め込みを生成
-  → FAISSへ保存
-  → 質問に近いチャンクを検索
-  → 検索結果をLLMへ渡す
-  → 回答と根拠を保存
-  → 評価スクリプトで比較
-```
+| ファイル | 現在の役割 |
+|---|---|
+| `vector.py` | txt・md fileの読込、chunk作成、embedding、FAISS保存の試行 |
+| `rag.py` / `ragout.py` | 検索・回答生成の試行 |
+| `evaluation.py` | 評価処理の試行 |
+| `chat.py` | 対話実行の試行 |
+| `requirements.txt` | 旧環境の依存候補。現在はそのままinstallできない |
 
-## 主なスクリプト
+## 再現できない主な理由
 
-| ファイル | 役割 |
-| --- | --- |
-| `vector.py` | 文書抽出、チャンク分割、埋め込み、ベクトルストア作成 |
-| `rag.py` / `ragout.py` | 関連チャンク検索と回答生成 |
-| `evaluation.py` | 回答・検索結果の評価 |
-| `chat.py` | 対話形式の実行 |
+### 依存定義
 
-現在のコードでは、多言語E5系埋め込みモデル、FAISS、複数LLMの利用を想定しています。実際のモデル識別子、必要VRAM、量子化方式はコードと設定を正としてください。
+`requirements.txt`には次の問題があります。
 
-## セットアップ
+- `python==3.8.10`は通常のpip package指定ではない
+- `logging==0.5.1.2`は標準libraryと競合する不要な指定
+- `intfloat/multilingual-e5-large`はpip package指定ではない
+- `vector.py`は`langchain_community`をimportするが、依存定義は旧`langchain==0.0.220`のみ
+- PyTorchの`+cpu` wheel取得元が固定されていない
 
-```bash
-git clone https://github.com/KAFKA2306/financeLLM.git
-cd financeLLM
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-```
+したがって、`pip install -r requirements.txt`を現在有効なquick startとして扱いません。
 
-Windowsでは仮想環境の有効化コマンドを変更してください。
+### 固定path
 
-## 入力文書
-
-例:
+`vector.py`は既定値として次を使用します。
 
 ```text
-data/documents/
-  company-a-integrated-report.pdf
-  company-a-earnings-presentation.pdf
+M:/ML/signatejpx
+M:/ML/signatejpx/output/logs
 ```
 
-文書には著作権、利用条件、個人情報が含まれる可能性があります。公開リポジトリへ第三者PDFを無条件にコミットしないでください。
+repository相対pathではないため、別環境ではそのまま動きません。
 
-## 実行
+### code品質
 
-### ベクトルストアを作る
+- import blockが重複している
+- `main`関数が重複している
+- README旧版はPDF処理を説明していたが、`vector.py`の探索対象は主に`.txt`と`.md`
+- 文書page番号を保持する正準schemaを確認できない
+- test、CI、fixture、評価datasetを確認できない
 
-```bash
-python vector.py
-```
+## 現在できること
 
-### RAG回答を生成する
+- 過去のRAG実装方針を参照する
+- chunking、embedding、FAISS保存の試作codeを監査する
+- 現行基盤へ移植する際の素材として利用する
 
-```bash
-python ragout.py
-```
+## 現在できないこと
 
-### 評価する
+- READMEだけで環境を再現する
+- PDFをpage citation付きで確実に処理する
+- 回答が根拠文書に支持されていると保証する
+- 財務数値の年度、四半期、通貨、単位を保証する
+- model間の性能比較結果を再現する
 
-```bash
-python evaluation.py
-```
+## 文書と秘密情報
 
-実際の引数、入力先、出力先は各スクリプトの現在のCLI定義を確認してください。
+- 第三者PDFを利用条件の確認なくcommitしない
+- API keyやtokenをPython fileへ保存しない
+- vector storeには原文の断片が含まれるため、機密文書のindexを公開しない
+- FAISS indexを信頼できないsourceから読み込まない
+- 入力文書、chunk、index、回答の公開範囲を同一とみなさない
 
-## 推奨する出力形式
+## 再開する場合の最小条件
 
-回答ごとに次を保存します。
+1. Python versionを`pyproject.toml`へ定義し、lock fileを作る
+2. repository相対pathまたは設定fileへ移行する
+3. PDF parserとpage metadataの契約を定義する
+4. document ID、page、chunk ID、score、model、created_atを保存する
+5. retrieval、groundedness、citation accuracy、numerical accuracy、abstentionを別々に評価する
+6. 小規模fixtureと回帰testを追加する
+7. 根拠不足時に回答を拒否する
+8. 既存の企業知識・EDINET基盤へ統合する場合は、正準dataの所有境界を明示する
 
-```json
-{
-  "question": "質問",
-  "answer": "生成回答",
-  "sources": [
-    {
-      "document": "文書名",
-      "page": 12,
-      "chunk_id": "...",
-      "score": 0.82
-    }
-  ],
-  "model": "使用モデル",
-  "created_at": "日時",
-  "status": "supported | insufficient_evidence"
-}
-```
+## 金融分析上の注意
 
-## 検索品質の確認
+生成回答は企業の公式見解、投資助言、売買推奨ではありません。年次と四半期、実績と予想、連結と単体、通貨と単位、訂正前後の文書を分離しなければなりません。
 
-- 正解ページが上位に検索されるか
-- 文書名、ページ番号、チャンクIDが残るか
-- 数値や表が途中で分断されていないか
-- 年度・四半期・通貨・単位を保持しているか
-- 異なる企業のチャンクが混ざっていないか
-- 質問に根拠がない場合に回答を拒否できるか
+## 関連する監査
 
-## 回答品質の評価
+- README監査Issue: https://github.com/KAFKA2306/financeLLM/issues/1
+- 全repository README監査: https://github.com/KAFKA2306/com/issues/3
 
-LLMによる自己採点だけでは品質を証明できません。次を分けて評価します。
-
-1. **Retrieval** — 必要な根拠を取得できたか
-2. **Groundedness** — 回答が取得文に支持されているか
-3. **Citation accuracy** — 引用先が実際に主張を支えるか
-4. **Numerical accuracy** — 数値・単位・期間が正しいか
-5. **Completeness** — 質問に必要な項目を満たすか
-6. **Abstention** — 根拠不足時に推測しなかったか
-
-## 財務文書特有の注意
-
-- 年次、四半期、累計、単独四半期を混ぜない
-- 売上高、受注高、ARR、利益、CFを区別する
-- 連結と単体を区別する
-- 通貨と単位を保存する
-- 実績、会社予想、コンセンサス、独自推計を分ける
-- 訂正開示がある場合は新しい版を優先する
-- 表の行列構造を壊さない
-
-## 秘密情報
-
-以前のREADMEではAPIキーを`secret/config.py`へ保存する手順がありましたが、Pythonファイルへの平文保存は推奨しません。
-
-```bash
-export OPENAI_API_KEY=...
-export HUGGINGFACE_TOKEN=...
-```
-
-- `.env`を使う場合は`.gitignore`へ追加する
-- APIキーをログやNotebook出力へ表示しない
-- 漏えいしたキーは削除ではなく失効・再発行する
-
-## 主な構成
-
-```text
-financeLLM/
-├── data/documents/       # 入力文書
-├── output/vector_store/  # ベクトルストア
-├── output/results/       # 回答・評価
-├── output/logs/          # 実行ログ
-├── vector.py
-├── rag.py
-├── ragout.py
-├── evaluation.py
-└── chat.py
-```
-
-## 現在の位置づけ
-
-本リポジトリはRAGの研究・実験用です。「高精度」「隠れた洞察」などの表現は、比較データセットと再現可能な評価がなければ性能保証になりません。
-
-生成回答は投資助言や企業の公式見解ではありません。
-
-**README最終監査:** 2026-08-01
+**README監査日:** 2026年8月5日
