@@ -13,7 +13,7 @@
 |---|---|
 | `vector.py` | txt・md fileの読込、chunk作成、embedding、FAISS保存の試行 |
 | `rag.py` / `ragout.py` | 検索・回答生成の試行 |
-| `evaluation.py` | 評価処理の試行 |
+| `evaluation.py` | オフラインfixtureによる決定論的なRAG評価 |
 | `chat.py` | 対話実行の試行 |
 | `requirements.txt` | 旧環境の依存候補。現在はそのままinstallできない |
 
@@ -48,20 +48,44 @@ repository相対pathではないため、別環境ではそのまま動きませ
 - `main`関数が重複している
 - README旧版はPDF処理を説明していたが、`vector.py`の探索対象は主に`.txt`と`.md`
 - 文書page番号を保持する正準schemaを確認できない
-- test、CI、fixture、評価datasetを確認できない
+- RAG本体の再現可能な依存環境は未整備
+
+## オフラインRAG評価
+
+`evaluation.py` の評価は回答文字数ではなく、固定fixtureと予測JSONを比較します。評価軸は retrieval、document/page/chunk citation、回答中の必須根拠、財務数値、abstention です。財務数値は値だけでなく、通貨・単位・年度・四半期を同じfactとして比較します。
+
+固定回帰テストは外部API・LLM・vector DBを使いません。
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+fixture評価CLIは次の形式です。
+
+```bash
+python evaluation.py \
+  --fixture tests/fixtures/rag_eval/fixture.json \
+  --predictions path/to/predictions.json \
+  --output output/evaluation.json
+```
+
+結果JSONには `fixture_revision`、`evaluator_version`、`model_id` とcase別metricsを保存します。同一fixture・同一predictionでは時刻を埋め込まないため、同じ評価結果を再生成できます。
+
+legacy CSVを評価する場合も回答長は採点に使用せず、`ground_truth` 本文との比較を行います。
 
 ## 現在できること
 
 - 過去のRAG実装方針を参照する
 - chunking、embedding、FAISS保存の試作codeを監査する
+- 固定fixtureで検索・引用・財務fact・棄却の評価ロジックを回帰検証する
 - 現行基盤へ移植する際の素材として利用する
 
 ## 現在できないこと
 
-- READMEだけで環境を再現する
+- READMEだけでRAG本体の環境を再現する
 - PDFをpage citation付きで確実に処理する
-- 回答が根拠文書に支持されていると保証する
-- 財務数値の年度、四半期、通貨、単位を保証する
+- fixtureに登録していない生成回答が根拠文書に支持されていると自動保証する
+- 財務数値の抽出器自体の正しさを保証する
 - model間の性能比較結果を再現する
 
 ## 文書と秘密情報
@@ -90,6 +114,7 @@ repository相対pathではないため、別環境ではそのまま動きませ
 ## 関連する監査
 
 - README監査Issue: https://github.com/KAFKA2306/financeLLM/issues/1
+- RAG評価Issue: https://github.com/KAFKA2306/financeLLM/issues/3
 - 全repository README監査: https://github.com/KAFKA2306/com/issues/3
 
 **README監査日:** 2026年8月5日
