@@ -1,0 +1,19 @@
+{
+  "fixture_revision": "rag-eval-v1",
+  "cases": [
+    {
+      "case_id": "revenue-q1",
+      "required_answer_phrases": ["売上高は120億円"],
+      "expected_document_ids": ["annual-report-2026"],
+      "expected_citations": [{"document_id": "annual-report-2026", "page": 12, "chunk_id": "p12-c3"}],
+      "expected_financial_facts": [{"value": "120", "currency": "JPY", "unit": "億円", "fiscal_year": "2026", "quarter": "Q1"}]
+    },
+    {
+      "case_id": "no-evidence",
+      "requires_abstention": true,
+      "expected_document_ids": [],
+      "expected_citations": [],
+      "expected_financial_facts": []
+    }
+  ]
+}
