@@ -1,0 +1,30 @@
+name: RAG evaluation
+
+on:
+  pull_request:
+    paths:
+      - "evaluation.py"
+      - "tests/**"
+      - ".github/workflows/rag-evaluation.yml"
+  push:
+    branches: [main]
+    paths:
+      - "evaluation.py"
+      - "tests/**"
+      - ".github/workflows/rag-evaluation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Compile
+        run: python -m py_compile evaluation.py tests/test_evaluation.py
+      - name: Run offline fixture tests
+        run: python -m unittest discover -s tests -v
